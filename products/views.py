@@ -12,11 +12,17 @@ def home(request):
     products = Product.objects.all()
     categories = Category.objects.annotate(product_count=Count('products'))
     
+    if request.user.is_authenticated:
+        user = request.user        
+    else:
+        user = None
+        
     context={
             'products': products,
-            'categories': categories
+            'categories': categories,
+            'user_info': user,
         }
-    
+        
     return render(request, 'products/home.html', context)
 
 def category_products(request, category_slug):

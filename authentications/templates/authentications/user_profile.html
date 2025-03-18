@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}User Dashboard {% endblock %}
+{% block title %}User Profile{% endblock %}
 {% block content %}
+
     <!-- Breadcrumb Section Start -->
     <section class="breadcrumb-section pt-0">
         <div class="container-fluid-lg">
@@ -56,7 +57,7 @@
                                     </div>
     
                                     <div class="profile-name">
-                                        <h3>{{user_info.username }}</h3>
+                                        <h3>{{user_info.first_name }} {{ user_info.last_name }}</h3>
                                         <h6 class="text-content"> {{user_info.email}}</h6>
                                     </div>
                                 </div>
@@ -105,10 +106,18 @@
                                         Privacy</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <a class="nav-link" href="{% url 'logout' %}" role="tab">
+                                    <form method="POST" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button class="nav-link" type="submit" name="logout" role="tab">
+                                            <i data-feather="log-out"></i> Logout
+                                        </button>
+                                    </form>
+                                    {% comment %} <a class="nav-link" href="{% url 'logout' %}" role="tab">
                                         <i data-feather="log-out"></i> Logout
-                                    </a>
+                                    </a> {% endcomment %}
                                 </li>
+                                    
+                                
                             </ul>
                         </div>
                     </div>
@@ -130,7 +139,7 @@
                                         </div>
     
                                         <div class="dashboard-user-name">
-                                            <h6 class="text-content">Hello, <b class="text-title">{{user_info.username}}</b></h6>
+                                            <h6 class="text-content">Hello, <b class="text-title">{{user_info.first_name}}</b></h6>
                                             <p class="text-content">From your My Account Dashboard you have the ability to
                                                 view a snapshot of your recent account activity and update your account
                                                 information. Select a link below to view or edit information.</p>
@@ -190,23 +199,11 @@
                                                             data-bs-toggle="modal" data-bs-target="#editProfile">Edit</a>
                                                     </h4>
                                                 </div>
-                                                <div class="dashboard-detail">
-                                                    <h6 class="text-content">{{user_info.username}}</h6>
+                                                <div class="dashboard-detail">                                                    
                                                     <h6 class="text-content">{{user_info.email}}</h6>
                                                     <a href="{%url "password_reset"%}">Change Password</a>
                                                 </div>
-                                            </div>
-    
-                                            <div class="col-xxl-6">
-                                                <div class="dashboard-content-title">
-                                                    <h4>Newsletters <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                            data-bs-target="#editProfile">Edit</a></h4>
-                                                </div>
-                                                <div class="dashboard-detail">
-                                                    <h6 class="text-content">You are currently not subscribed to any
-                                                        newsletter</h6>
-                                                </div>
-                                            </div>
+                                            </div>                                            
     
                                             <div class="col-12">
                                                 <div class="dashboard-content-title">
@@ -218,22 +215,47 @@
                                                     <div class="col-xxl-6">
                                                         <div class="dashboard-detail">
                                                             <h6 class="text-content">Default Billing Address</h6>
+                                                            {% if user_info.address %}
+                                                            </h5 class="text-content">
+                                                                {{user_info.address}} <br>  
+                                                                        {{user_info.city}}, 
+                                                                        {{user_info.state}}, 
+                                                                        {{user_info.country}},
+                                                                        {{user_info.postal_code}}
+                                                            </h5>
+                                                            {% else %}
                                                             <h6 class="text-content">You have not set a default billing
                                                                 address.</h6>
+                                                            {% endif %}
+                                                            <br>
+                                                            <!--
                                                             <a href="javascript:void(0)" data-bs-toggle="modal"
                                                                 data-bs-target="#editProfile">Edit Address</a>
+                                                            -->
                                                         </div>
                                                     </div>
     
                                                     <div class="col-xxl-6">
                                                         <div class="dashboard-detail">
                                                             <h6 class="text-content">Default Shipping Address</h6>
-                                                            <h6 class="text-content">You have not set a default shipping
-                                                                address.</h6>
+                                                            <h5 class="text-content">You have not set a default shipping address.</h5>
+                                                            <!--
                                                             <a href="javascript:void(0)" data-bs-toggle="modal"
                                                                 data-bs-target="#editProfile">Edit Address</a>
+                                                            -->
                                                         </div>
                                                     </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-xxl-6">
+                                                <div class="dashboard-content-title">
+                                                    <h4>Newsletters <a href="javascript:void(0)" data-bs-toggle="modal"
+                                                            data-bs-target="#editProfile">Edit</a></h4>
+                                                </div>
+                                                <div class="dashboard-detail">
+                                                    <h6 class="text-content">You are currently not subscribed to any
+                                                        newsletter</h6>
                                                 </div>
                                             </div>
                                         </div>
@@ -1031,25 +1053,25 @@
                                                             <table class="table">
                                                                 <tbody>
                                                                     <tr>
-                                                                        <td colspan="2">{{user_info.username}}</td>
+                                                                        <td colspan="2">{{user_info.first_name}}{{user_info.last_name}} ({{user_info.email}})</td>
                                                                     </tr>
     
                                                                     <tr>
                                                                         <td>Address :</td>
                                                                         <td>
-                                                                            <p>{{user_info.userprofile.address_line_1}}, {{user_info.userprofile.address_line_2}}</td>
+                                                                            <p>{{user_info.address}}<br> {{user_info.city}}, {{user_info.state}}, {{user_info.country}}
                                                                             </p>
                                                                         </td>
                                                                     </tr>
     
                                                                     <tr>
-                                                                        <td>Pin Code :</td>
-                                                                        <td>+380</td>
+                                                                        <td>Postal Code : </td>
+                                                                        <td> {{user_info.postal_code}} </td>
                                                                     </tr>
     
                                                                     <tr>
                                                                         <td>Phone :</td>
-                                                                        <td>+ 88 {{user_info.userprofile.mobile}}</td>
+                                                                        <td>{{user_info.mobile}}</td>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
@@ -1254,11 +1276,11 @@
     
                                         <div class="profile-detail dashboard-bg-box">
                                             <div class="dashboard-title">
-                                                <h3>Profile Name</h3>
+                                                <h3>{{user_info.first_name}} {{user_info.last_name}}</h3>
                                             </div>
                                             <div class="profile-name-detail">
                                                 <div class="d-sm-flex align-items-center d-block">
-                                                    <h3>{{user_info.username}}</h3>
+                                                    <h3>{{user_info.email}}</h3>
                                                     <div class="product-rating profile-rating">
                                                         <ul class="rating">
                                                             <li>
@@ -1290,11 +1312,10 @@
                                                         <div class="location-box">
                                                             <i data-feather="map-pin"></i>
                                                             <h6>
-                                                                {{user_info.userprofile.address_line_1}}, 
-                                                                    {{user_info.userprofile.address_line_2}}, 
-                                                                    {{user_info.userprofile.city}}, 
-                                                                    {{user_info.userprofile.state}}, 
-                                                                    {{user_info.userprofile.country}} 
+                                                                {{user_info.address}},                                                                      
+                                                                {{user_info.city}}, 
+                                                                {{user_info.state}}, 
+                                                                {{user_info.country}} 
                                                                 
                                                             </h6>
                                                         </div>
@@ -1345,26 +1366,25 @@
                                                         <table class="table">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td>Gender :</td>
-                                                                    <td>Male</td>
+                                                                    <td>First Name :</td>
+                                                                    <td>{{user_info.first_name}}</td>
                                                                 </tr>
                                                                 <tr>
-                                                                    <td>Birthday :</td>
-                                                                    <td>21/05/1997</td>
+                                                                    <td>Last Name :</td>
+                                                                    <td>{{user_info.last_name}}</td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td>Phone Number :</td>
                                                                     <td>
-                                                                        <a href="javascript:void(0)"> + {{user_info.userprofile.mobile}}</a>
+                                                                        <a href="javascript:void(0)">{{user_info.mobile}}</a>
                                                                     </td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td>Address :</td>
-                                                                    <td>{{user_info.userprofile.address_line_1}} <br> 
-                                                                        {{user_info.userprofile.address_line_2}}, 
-                                                                        {{user_info.userprofile.city}} <br> 
-                                                                        {{user_info.userprofile.state}}, 
-                                                                        {{user_info.userprofile.country}} 
+                                                                    <td>{{user_info.address}} <br>  
+                                                                        {{user_info.city}}, 
+                                                                        {{user_info.state}}, 
+                                                                        {{user_info.country}} 
                                                                     </td>                                                                    
                                                                 </tr>
                                                             </tbody>
@@ -2210,8 +2230,8 @@
 
                     <form>
                         <div class="form-floating mb-4 theme-form-floating">
-                            <input type="email" class="form-control" id="pin" placeholder="Enter Pin Code">
-                            <label for="pin">Pin Code</label>
+                            <input type="text" class="form-control" id="pin" placeholder="Enter Postal Code">
+                            <label for="pin">Postal Code</label>
                         </div>
                     </form>
                 </div>
@@ -2339,11 +2359,19 @@
                     </div>
                     <div class="modal-body">
                         <div class="row g-4">
-                            <!-- Full Name -->
+                            <!-- First Name -->
                             <div class="col-xxl-12">
                                 <div class="form-floating theme-form-floating">
-                                    <input type="text" class="form-control" name="username" id="pname" value="{{ user_info.username }}">
-                                    <label for="pname">Full Name</label>
+                                    <input type="text" class="form-control" name="first_name" id="first_name" value="{{ user_info.first_name }}">
+                                    <label for="first_name">First Name</label>
+                                </div>
+                            </div>
+
+                            <!-- Last Name -->
+                            <div class="col-xxl-12">
+                                <div class="form-floating theme-form-floating">
+                                    <input type="text" class="form-control" name="last_name" id="last_name" value="{{ user_info.last_name }}">
+                                    <label for="last_name">Last Name</label>
                                 </div>
                             </div>
     
@@ -2358,7 +2386,7 @@
                             <!-- Mobile -->
                             <div class="col-xxl-6">
                                 <div class="form-floating theme-form-floating">
-                                    <input class="form-control" type="tel" name="mobile" id="mobile" value="{{ user_info.userprofile.mobile }}" maxlength="15">
+                                    <input class="form-control" type="tel" name="mobile" id="mobile" value="{{ user_info.mobile }}" maxlength="15">
                                     <label for="mobile">Mobile Number</label>
                                 </div>
                             </div>
@@ -2366,41 +2394,15 @@
                             <!-- Address Line 1 -->
                             <div class="col-12">
                                 <div class="form-floating theme-form-floating">
-                                    <input type="text" class="form-control" name="address_line_1" id="address1" value="{{ user_info.userprofile.address_line_1 }}">
-                                    <label for="address1">Address Line 1</label>
+                                    <input type="text" class="form-control" name="address" id="address" value="{{ user_info.address }}">
+                                    <label for="address">Address</label>
                                 </div>
-                            </div>
-    
-                            <!-- Address Line 2 -->
-                            <div class="col-12">
-                                <div class="form-floating theme-form-floating">
-                                    <input type="text" class="form-control" name="address_line_2" id="address2" value="{{ user_info.userprofile.address_line_2 }}">
-                                    <label for="address2">Address Line 2</label>
-                                </div>
-                            </div>
-    
-                            <!-- Country -->
-                            <div class="col-xxl-4">
-                                <div class="form-floating theme-form-floating">
-                                    <select class="form-select" name="country" id="floatingSelect1">
-                                        <option selected>{{ user_info.userprofile.country }}</option>
-                                        <option value="canada">Canada</option>
-                                        <option value="United Kingdom">United Kingdom</option>
-                                        <option value="Bangladesh">Bangladesh</option>
-                                        <option value="China">China</option>
-                                        <option value="India">India</option>
-                                        <option value="Russia">Russia</option>
-                                        <option value="France">France</option>
-                                        <!-- Add more countries as needed -->
-                                    </select>
-                                    <label for="floatingSelect1">Country</label>
-                                </div>
-                            </div>
+                            </div>                                                           
     
                             <!-- City -->
                             <div class="col-xxl-4">
                                 <div class="form-floating theme-form-floating">
-                                    <input type="text" class="form-control" name="city" id="city" value="{{ user_info.userprofile.city }}">
+                                    <input type="text" class="form-control" name="city" id="city" value="{{ user_info.city }}">
                                     <label for="city">City</label>
                                 </div>
                             </div>
@@ -2408,8 +2410,32 @@
                             <!-- State -->
                             <div class="col-xxl-4">
                                 <div class="form-floating theme-form-floating">
-                                    <input type="text" class="form-control" name="state" id="state" value="{{ user_info.userprofile.state }}">
+                                    <input type="text" class="form-control" name="state" id="state" value="{{ user_info.state }}">
                                     <label for="state">State</label>
+                                </div>
+                            </div>
+
+                            <!-- Postal Code -->
+                            <div class="col-xxl-4">
+                                <div class="form-floating theme-form-floating">
+                                    <input type="text" class="form-control" name="postal_code" id="postal_code" value="{{ user_info.postal_code }}">
+                                    <label for="postal_code">Postal Code</label>
+                                </div>
+                            </div>
+
+                            <!-- Country -->
+                            <div class="col-xxl-4">
+                                <div class="form-floating theme-form-floating">
+                                    {% load countries %}
+                                    {% get_countries as countries %}                                                                                
+                                    <select class="form-select" name="country" id="floatingSelect1">
+                                        <option value="{{ user_info.country }}">{{ user_info.country }}</option>
+                                        {% for country in countries %}                                            
+                                            <option value="{{ country.name }}">{{ country.name }}, {{ country.code }}</option>
+                                        {% endfor %}                                        
+                                        <!-- Add more countries as needed -->
+                                    </select> 
+                                    <label for="floatingSelect1">Country</label>
                                 </div>
                             </div>
                         </div>

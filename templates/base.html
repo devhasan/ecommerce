@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"> <!-- css for toast message -->
 
-    <title>{% block title %}Base{% endblock title %}</title>
+    <title>FastKart- {% block title %}Home{% endblock title %}</title>
 
     <!-- Google font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -51,6 +51,8 @@
     <!-- Template css -->
     <!-- <link id="color-link" rel="stylesheet" type="text/css" href="../assets/css/style.css"> -->
      <link id="color-link" rel="stylesheet" type="text/css" href="{% static 'assets/css/style.css' %}">
+    <!--Country Flag css-->
+    <link rel="stylesheet" href="{% static 'flags/sprite.css' %}">
 
 </head>
 
@@ -618,6 +620,7 @@
                                         <i class="fas fa-shopping-bag"></i>
                                     </a>
                                 </li>
+
                             </ul>
 
                             {% if request.user.is_authenticated %}
@@ -625,15 +628,15 @@
                                     <span class="header-icon">
                                         <i class="fas fa-user"></i>
                                     </span>
-                                    
+                                    <p class="mt-auto">Hi! {{user_info.first_name}} </p>                                    
                                 </a>
                             
-                            {% else %}
-                                    <a href="{% url 'login' %}" class="user-box">
-                                        <span class="header-icon">
-                                        <i class="fas fa-user"></i>
-                                    </a>
-                            {% endif %}
+                                    {% else %}
+                                            <a href="{% url 'login' %}" class="user-box">
+                                                <span class="header-icon">
+                                                <i class="fas fa-user"></i>
+                                            </a>
+                                    {% endif %}                            
 
                             <!-- <a target="_blank" class="btn mobile-app d-xxl-flex d-none"
                                 href="https://play.google.com/store/games?utm_source=apac_med&utm_medium=hasem&utm_content=Oct0121&utm_campaign=Evergreen&pcampaignid=MKT-EDR-apac-in-1003227-med-hasem-py-Evergreen-Oct0121-Text_Search_BKWS-BKWS%7CONSEM_kwid_43700065205026415_creativeid_535350509927_device_c&gclid=Cj0KCQjw8uOWBhDXARIsAOxKJ2H1K3VqdJFHodt0-XSnQzcuOuTP-s2aPBE6lG0QVOf8D5cJBsB-DxQaAkNAEALw_wcB&gclsrc=aw.ds">

@@ -18,6 +18,12 @@ class Category(models.Model):
 
     def __str__(self) -> str:
         return self.category_name
+
+class SubCategory(models.Model):
+    category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+    subcategory_image = models.ImageField(upload_to="subcategories")
     
 class Product(models.Model):
     name = models.CharField(max_length=255)
@@ -77,6 +83,7 @@ class Product(models.Model):
         if reviews['count'] is not None:
             count = int(reviews['count'])
         return count
+
 #After cart
     def is_in_cart(self, request):
         """Check if the product is in the cart."""
@@ -97,11 +104,25 @@ class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user')
     rating = models.FloatField()
-    review = models.TextField(max_length=500, blank=True)
-    
+    review = models.TextField(max_length=500, blank=True)    
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'Review by {self.user.username} for {self.product.name}'
+
+class ProductSpecification(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='specifications')
+    specification_name = models.CharField(max_length=100)
+    specification_value = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return f"{self.specification_name} - {self.specification_value}"
+
+class Unit(models.Model):
+    name = models.CharField(max_length=10)
+    
+    def __str__(self):
+        return self.unit_name
+

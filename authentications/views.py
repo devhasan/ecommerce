@@ -26,13 +26,15 @@ def user_profile(request):
         #user.username = request.POST.get('username', user.username)
         email = request.POST.get('email', user.email)
         if email != user.email:                     
-            return email_change_verification(request, email, user)
-        
+            return email_change_verification(request, email)
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
         user.mobile = request.POST.get('mobile', user.mobile)
-        user.address_line_1 = request.POST.get('address_line_1', user.address_line_1)        
+        user.address = request.POST.get('address', user.address)        
         user.city = request.POST.get('city', user.city)
         user.state = request.POST.get('state', user.state)
         user.country = request.POST.get('country', user.country)
+        user.postal_code = request.POST.get('postal_code', user.postal_code)
         user.save()
 
         return redirect('user_profile')
@@ -98,31 +100,29 @@ def send_verification_email(user, verification_link):
     email.send()
 
 @login_required
-def email_change_verification(request, email, user):
-    #if request.method == 'POST':
-        #email = request.POST.get('email')
-        #user = request.user
+def email_change_verification(request, email):    
+        user = request.user
         user.email = email
         user.is_verified = False   # Mark user as unverified if email changes
         existing_user = CustomUser.objects.filter(email=email).exclude(id=user.id) # Check if the email already exists
         try:
             if existing_user.exists():
                 messages.error(request, "A user with that email already exists.")
-                return redirect('user_dashboard')
+                return redirect('user_profile')
             user.save()                   
             user = request.user
             current_site = get_current_site(request)
             verification_link = f"http://{current_site.domain}/authentications/verify/{urlsafe_base64_encode(force_bytes(user.pk))}/{default_token_generator.make_token(user)}"
             
             send_verification_email(user, verification_link)
-            messages.info(request, f"Your email has been updated. Please verify your email at {user.email}")
+            messages.info(request, f"Your email has been updated. Please verify your email at {email}")
             return redirect('login')
         
         except Exception as e:
             # Log the exception and show an error message
             print(f"Error changing email: {e}")
             messages.info(request, f"An error occurred while changing your email.{e}")
-            return redirect('user_dashboard')
+            return redirect('user_profile')
         
 def verify_email(request, uidb64, token):
     try:
@@ -140,14 +140,15 @@ def verify_email(request, uidb64, token):
         messages.error(request, 'The verification link is invalid or has expired.')
         return redirect('signup')
 
-
 @csrf_exempt
 def user_login(request):
+    if request.user.is_authenticated:
+        return redirect('user_profile')  # Redirect to profile page if user is already logged in
+        
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')        
-        user = authenticate(request, email=email, password=password)
-        print(email, password, user)
+        user = authenticate(request, email=email, password=password)        
         if user is not None:
             login(request, user)
             messages.success(request, 'Successfully logged in.')
@@ -161,8 +162,11 @@ def user_login(request):
 
 @login_required
 def user_logout(request):
-    logout(request)
-    return redirect('home')
+    if request.method == 'POST':
+        logout(request)
+        messages.success(request, 'Successfully logged out.')
+        return redirect('home')
+    return redirect('user_profile')
 
 def password_reset(request):
     if request.method == 'POST':
@@ -178,7 +182,6 @@ def password_reset(request):
 
         if user:
             current_site = get_current_site(request)
-            subject = 'Reset your password'
             verification_link = f"http://{current_site.domain}/authentications/password_reset_confirm/{urlsafe_base64_encode(force_bytes(user.pk))}/{default_token_generator.make_token(user)}"
     
             send_password_reset_email(request, user, verification_link)
@@ -202,7 +205,6 @@ def send_password_reset_email(request, user, verification_link):
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[user.email],
     )
-
     # Send the email
     email.content_subtype = 'html'  # Ensure the email is sent as HTML
     email.send()
@@ -221,27 +223,34 @@ def password_reset_confirm(request, uidb64, token):
         return redirect(f'/authentications/newpassword/{uidb64}/{token}')
     else:
         messages.error(request, 'The verification link is invalid or has expired.')
-        return redirect('signup')
+        return redirect('login')
 
+
+#password reset from the login page or password reset page
 def newpassword(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
         user = CustomUser.objects.get(pk=uid)
-        print(user)
-    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
-        user = None
+         # Check if the token is valid
+        if default_token_generator.check_token(user, token):
+            if request.method == 'POST':
+                form = CustomSetPasswordForm(user=user, data=request.POST)
+                if form.is_valid():
+                    form.save()  # Save the new password
+                    messages.success(request, 'Password updated successfully.')
+                    return redirect('login')  # Redirect to a success page
+            else:
+                form = CustomSetPasswordForm(user=user)
+
+            return render(request, 'authentications/newpassword.html', {'form': form})
+
+        else:
+            form = CustomSetPasswordForm(user=user)
+            return render(request, 'authentications/newpassword.html', {'form': form})
         
-    if request.method == 'POST':
-        password = request.POST.get('password1')
-        confirm_password = request.POST.get('password2')
-        if password != confirm_password:
-            messages.error(request, 'Passwords do not match.')
-            return redirect('newpassword')        
-        user.set_password(password)
-        user.save()
-        messages.success(request, 'Password updated successfully.')
-        return redirect('login')
-    return render(request, 'authentications/newpassword.html')
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist) as e:
+        messages.error(request, f"Error changing password: {e}")        
+        return render(request, 'authentications/newpassword.html', {'form': form})
 
 '''
 @login_required #password reset from the profile page
@@ -271,7 +280,6 @@ def update_profile(request):
         username = request.POST.get('username', user.username)
         email = request.POST.get('email', "")
         
-        print(user.email, email)
         if email != user.email:
             user.is_verified = False   # Mark user as unverified if email changes
             messages.info(request, 'Your email has been updated. Please verify your new email address.')            

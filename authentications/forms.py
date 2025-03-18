@@ -35,7 +35,10 @@ class CustomUserRegistrationForm(UserCreationForm):  #for signup
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(required=True)
 
+# Password Reset Form
 class CustomSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'id':'new_password1', 'placeholder': 'New Password', 'required': True}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'id':'new_password2', 'placeholder': 'Confirm New Password', 'required': True}))
     class Meta:
         model = CustomUser
         fields = ('new_password1', 'new_password2')
